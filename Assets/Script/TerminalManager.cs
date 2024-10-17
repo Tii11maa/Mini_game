@@ -15,6 +15,13 @@ public class TerminalManager : MonoBehaviour
     public ScrollRect sr;
     public GameObject msgList;
 
+    Interpreter interpreter;
+    
+    private void Start()
+    {
+        interpreter = GetComponent<Interpreter>();
+    }
+
 
     private void OnGUI()
     {
@@ -28,6 +35,9 @@ public class TerminalManager : MonoBehaviour
 
 
             AddDirectoryLine(userInput);
+            int lines = AddInterpreterLines(interpreter.Interpret(userInput));
+
+            ScrolltoBottom(lines);
 
             //moving user input line to the end
             userInputLine.transform.SetAsLastSibling();
@@ -59,10 +69,36 @@ public class TerminalManager : MonoBehaviour
         {
             texts[1].text = userInput;
         }
-        else
+
+    }
+
+    int AddInterpreterLines(List<string> interpretation)
+    {
+        for (int i = 0; i < interpretation.Count; i++)
         {
-            Debug.LogError("Not enough Text components found in the children of msg!");
+
+            GameObject res = Instantiate(responseLine, msgList.transform);
+            res.transform.SetAsLastSibling();
+            Vector2 listSize = msgList.GetComponent<RectTransform>().sizeDelta;
+            msgList.GetComponent<RectTransform>().sizeDelta = new Vector2(listSize.x, listSize.y + 35.0f);
+
+            res.GetComponentInChildren<TMP_Text>().text = interpretation[i];
         }
 
+        return interpretation.Count;
+    }
+
+    void ScrolltoBottom(int lines)
+    {
+        if(lines > 4)
+        {
+            sr.velocity = new Vector2(0, 450);
+
+        }
+
+        else
+        {
+            sr.verticalNormalizedPosition = 0;
+        }
     }
 }
